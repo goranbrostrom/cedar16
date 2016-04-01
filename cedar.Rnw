@@ -1,0 +1,242 @@
+\documentclass[t,a4paper,11pt]{beamer}
+
+\usepackage[utf8]{inputenc}
+\usepackage{amsmath}
+\usepackage{amssymb}
+%\usepackage{natbib}
+
+%\usepackage[figuresonly]{endfloat}
+
+%\bibliographystyle{apalike}
+
+\usepackage{color}
+
+\newcommand{\emp}[1]{\textcolor{blue}{#1}}
+
+\usetheme{Singapore}% best choice.
+  \setbeamercovered{transparent}%
+
+\newcommand{\R}{{\bf R}}
+\newcommand{\code}[1]{{\tt #1}}
+
+\title{Demography of Umeå and Skellefteå in the twentieth century}
+\author{Göran Broström}
+\date{April 21, 2016}
+
+\begin{document}
+
+\maketitle
+
+\begin{frame}{Outline}
+
+<<setup, include = FALSE>>=
+library(knitr)
+opts_chunk$set(engine='R',dev='pdf',fig.path='figs/slide-',tidy=FALSE,fig.height=5.5,fig.width=8,strip.white=TRUE,cache=TRUE,echo=FALSE,message=FALSE,comment=NA)##$
+library(skum)
+obs$event <- !is.na(obs$sluttyp) & obs$sluttyp == 2
+skum20 <- cal.window(obs, c(1901, 1951))
+sk19 <- cal.window(obs[obs$region == "ske", ], c(1801, 1901))
+@
+
+Generally,
+
+\begin{itemize}
+\item This is about
+\item histories
+\end{itemize}
+
+But here \emp{somewhat less}
+
+\end{frame}
+
+\begin{frame}{Population}
+  
+<<popu>>=
+source("R/pop1.R")
+um <- with(skum20[skum20$region == "ume", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
+sk <- with(skum20[skum20$region == "ske", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
+plot(names(sk), sk / 1000, type = "l", col = "red", ylim = c(0, max(sk/1000)), axes = FALSE,
+     ylab = "Population / 1000", xlab = "Year")
+lines(names(um),  um / 1000, col = "blue", type = "l")
+axis(1, at = c(1901, 1913, 1921, 1931, 1941, 1951))
+axis(2)
+box()
+abline(h = 0)
+abline(v = c(1901, 1913, 1921, 1931, 1941, 1951), lty = 3, col = "darkgreen")
+abline(h = c(10, 20, 40, 60), lty = 3, col = "darkgreen")
+text(1905, 55, "Skellefteå region", col = "red")
+text(1905, 28, "Umeå region", col = "blue")
+um <- with(skum20[skum20$ortnmn == "UMEÅ", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
+lines(names(um), um / 1000, type = "l", col = "blue", lty = 2)
+text(1911, 11, "Umeå stad", col = "blue")
+sk <- with(skum20[skum20$ortnmn == "SKELLEFTEÅ STAD", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
+##axis(1, at = c(1901, 1906, 1912, 1921))
+##axis(2, at = c(1, 2, 3))
+box()
+##abline(h = c(1, 2, 3), lty = 3, col = "darkgreen")
+lines(names(sk), sk / 1000, type = "l", col = "red", lty = 2)
+text(1945, 3, "Skellefteå stad", col = "red")
+abline(h = 0)
+##abline(v = c(1901, 1906, 1912, 1921))
+@   
+
+\end{frame}
+
+\begin{frame}{Skellefteå stad 1901-1920}
+
+<<skstad>>=
+plot(names(sk[1:20]), sk[1:20] / 100, type = "l", col = "red", ylim = c(0, max(sk[1:20] / 100)), ylab = "Population / 100", xlab = "Year", axes = FALSE, xlim = c(1900, 1921), lty = 1)
+axis(1, at = c(1901, 1906, 1913, 1920))
+axis(2, at = c(0, 5, 10, 15, 20, 25, 30))
+box()
+abline(h = c(10, 20, 30), lty = 3, col = "darkgreen")
+abline(h = 0)
+abline(v = c(1901, 1906, 1913, 1920), lty = 3, col = "darkgreen")
+@
+
+\end{frame}
+
+\begin{frame}{DDB, Skellefteå and Umeå Data}
+
+\end{frame}
+
+\begin{frame}[fragile]{Skellefteå and Umeå regions}
+  
+\begin{figure}[ht!]
+\includegraphics[height=8cm]{figure/sweden}
+\caption{Skellefteå and Umeå in Sweden.}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}{Expected life (e0), Skellefteå 1801-1950}
+
+<<explifes>>=
+source("R/pop2.R")
+if(!file.exists("sktab.rda")){
+ske <- obs[obs$region == "ske", ]
+ske <- cal.window(ske, c(1801, 1951))
+sktab <- pop2(ske, years = seq(1801, 1951, by = 5))
+save(sktab, file = "sktab.rda")
+}else{
+    load("sktab.rda")
+}
+x <- with(sktab$out, tapply(event, list(age = age, year = year), sum))
+rat <- x / sktab$pop
+ct <- c(1, seq(5, 90, by = 5))
+rat <- rat[-nrow(rat), ]
+e0 <- numeric(ncol(rat))
+e1 <- numeric(ncol(rat))
+for (i in 1:ncol(rat)){
+    e0[i] <- integrate(ppch, 0, 100, lower.tail = FALSE, cuts = ct, levels = rat[, i])$value
+    e1[i] <- integrate(ppch, 0, 100, lower.tail = FALSE, cuts = ct, levels = c(0, rat[-1, i]))$value
+}
+plot(colnames(rat), e0, type = "s", col = "blue", ylim = c(0, 80), xlab = "Year")
+lines(colnames(rat), e1, type = "s", col = "red")
+abline(h = c(40, 50, 60, 70), lty = 3, col = "darkgreen")
+@
+
+\end{frame}
+
+\begin{frame}{e0 by sex, Skellefteå 1801-1950}
+
+<<skbysex>>=
+fempop <- with(sktab$out[sktab$out$sex == "female", ], tapply(exit - enter, list(age = age, year = year), sum))
+femdeaths <- with(sktab$out[sktab$out$sex == "female", ], tapply(event, list(age = age, year = year), sum))
+malpop <- with(sktab$out[sktab$out$sex == "male", ], tapply(exit - enter, list(age = age, year = year), sum))
+maldeaths <- with(sktab$out[sktab$out$sex == "male", ], tapply(event, list(age = age, year = year), sum))
+femrat <- femdeaths / fempop
+femrat <- femrat[-nrow(femrat), ]
+malrat <- maldeaths / malpop
+malrat <- malrat[-nrow(malrat), ]
+ef <- numeric(ncol(femrat))
+em <- numeric(ncol(malrat))
+for (i in 1:ncol(malrat)){
+    em[i] <- integrate(ppch, 0, 100, lower.tail = FALSE, cuts = ct, levels = malrat[, i])$value
+    ef[i] <- integrate(ppch, 0, 100, lower.tail = FALSE, cuts = ct, levels = c(0, femrat[-1, i]))$value
+}
+plot(colnames(femrat), ef, type = "s", col = "red", ylim = c(0, 80), xlab = "Year", ylab = "e0")
+lines(colnames(femrat), em, type = "s", col = "blue")
+text(1850, 70, "Women", col = "red")
+text(1850, 40, "Men", col = "blue")
+abline(h = c(40, 50, 60, 70), col = "darkgreen", lty = 3)
+abline(h = 0)
+@
+
+
+\end{frame}
+
+\begin{frame}[fragile]{Median life at 40, Skellefteå}
+
+\includegraphics[height=8cm,width=10cm]{figure/socmen-1}
+
+\end{frame}  
+
+\begin{frame}[fragile]{Median life at 40, Umeå}
+
+\includegraphics[height=8cm,width=10cm]{figure/socmenume-1}
+
+\end{frame}  
+
+\begin{frame}[fragile]{Relative risks in ages 40--59, Skellefteå}
+  
+\includegraphics[height=8cm]{figure/socpoinperiod-1}
+
+\end{frame}  
+\begin{frame}[fragile]{Relative risks in ages 40--59, Umeå}
+  
+\includegraphics[height=8cm]{figure/socpoinperiodum-1}
+
+\end{frame}  
+\begin{frame}[fragile]{Relative risks in ages 60--99, Skellefteå}
+  
+\includegraphics[height=8cm]{figure/socpoinperiod100-1}
+
+\end{frame}  
+\begin{frame}[fragile]{Relative risks in ages 60--99, Umeå}
+  
+\includegraphics[height=8cm]{figure/socpoinperiodum100-1}
+
+\end{frame}  
+
+%' \begin{frame}[fragile]{Frailty}
+%' 
+%' \tiny
+%' <<frail,echo=FALSE,eval=FALSE>>=
+%' source("R/addPer.R")
+%' cut <- c(1851, 1876, 1901, 1921, 1940, 1951)
+%' xc <- numeric(length(cut) - 1)
+%' for (i in 1:(length(cut) - 1)){
+%'   xc[i] <- (cut[i] + cut[i + 1]) / 2
+%' }
+%' ucut <- cut[-(1:2)]
+%' uxc <- xc[-(1:2)]
+%' mud <- addPer(adult, cuts = cut)
+%' mad <- mud[!is.na(mud$socpo40), ]
+%' mad$socpo <- mad$socpo40
+%' mad <- age.window(mad, c(40, 60))
+%' smen <- mad[mad$sex == "male" & mad$region == "ske", ]
+%' library(coxme)
+%' options(digits = 4, show.signif.stars = FALSE)
+%' fit <- coxph(Surv(enter, exit, event) ~ socpo + period + civst + urban, 
+%'              data = smen[!is.na(smen$mid), ])
+%' fit2 <- coxme(Surv(enter, exit, event) ~ socpo + period + civst + urban + 
+%'                   (1 | mid), data = smen[!is.na(smen$mid), ])
+%' summary(fit2)
+%' @ 
+%' 
+%' 
+%' \end{frame}
+%' 
+%' \begin{frame}[fragile]{Analysis of Deviance}
+%' <<anova,eval=FALSE>>=
+%' anova(fit, fit2)
+%' @   
+%' \end{frame}
+
+\begin{frame}[fragile]{Conclusion}
+
+We have shown
+\end{frame}
+
+\end{document}
