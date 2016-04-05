@@ -12,7 +12,7 @@ pop2 <- function(dat,
     pop <- matrix(0, nrow = nage, ncol = nyr)
     out <- dat[1, ]
     for (y in 1:nyr){
-        cat("Year = ", years[y], "\n")
+        ##cat("Year = ", years[y], "\n")
         pp <- cal.window(dat, c(years[y], years[y + 1]))
         for (a in 1:nage){
             pa <- age.window(pp, c(ages[a], ages[a + 1]))
@@ -21,7 +21,7 @@ pop2 <- function(dat,
                 pa$year <- years[y]
                 pa$age <- ages[a]
                 out <- rbind(out, pa)
-                cat("Age = ", ages[a], "\n")
+                ##cat("Age = ", ages[a], "\n")
             }
         }
     }
