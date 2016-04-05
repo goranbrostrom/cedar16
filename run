@@ -1,0 +1,2 @@
+#!/bin/bash -eu
+R --no-restore -e "library(knitr); knit2pdf('cedar.Rnw')"
