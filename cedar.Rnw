@@ -31,7 +31,7 @@
 
 <<setup, include = FALSE>>=
 library(knitr)
-opts_chunk$set(engine='R',dev='pdf',fig.path='figs/slide-',tidy=FALSE,fig.height=5.5,fig.width=8,strip.white=TRUE,cache=TRUE,echo=FALSE,message=FALSE,comment=NA)##$
+opts_chunk$set(engine='R',dev='pdf',fig.path='figs/slide-',tidy=FALSE,fig.height=5.5,fig.width=8,strip.white=TRUE,cache=TRUE,echo=FALSE,message=FALSE,comment=NA,warning=FALSE)##$
 library(skum)
 obs$event <- !is.na(obs$sluttyp) & obs$sluttyp == 2
 skum20 <- cal.window(obs, c(1901, 1951))
@@ -49,17 +49,18 @@ But here \emp{somewhat less}
 
 \end{frame}
 
-\begin{frame}{Population}
+\begin{frame}{Populations over time}
   
 <<popu>>=
 source("R/pop1.R")
 um <- with(skum20[skum20$region == "ume", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
 sk <- with(skum20[skum20$region == "ske", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
-plot(names(sk), sk / 1000, type = "l", col = "red", ylim = c(0, max(sk/1000)), axes = FALSE,
-     ylab = "Population / 1000", xlab = "Year")
-lines(names(um),  um / 1000, col = "blue", type = "l")
-axis(1, at = c(1901, 1913, 1921, 1931, 1941, 1951))
-axis(2)
+plot(spline(names(sk), sk / 1000), type = "l", col = "red", ylim = c(0, max(sk/1000)), axes = FALSE,
+     ylab = "Population / 1000", xlab = "Calendar time")
+lines(spline(names(um),  um / 1000), col = "blue", type = "l")
+yrlab <- c(1901, 1913, 1921, 1931, 1941, 1951)
+axis(1, at = yrlab, labels = c(paste("1 Jan", yrlab[-length(yrlab)]), "31 Dec 1950"), cex.axis = 0.8)
+axis(2, at = c(0, 10, 20, 40, 60), las = 1)
 box()
 abline(h = 0)
 abline(v = c(1901, 1913, 1921, 1931, 1941, 1951), lty = 3, col = "darkgreen")
@@ -67,14 +68,14 @@ abline(h = c(10, 20, 40, 60), lty = 3, col = "darkgreen")
 text(1905, 55, "Skellefteå region", col = "red")
 text(1905, 28, "Umeå region", col = "blue")
 um <- with(skum20[skum20$ortnmn == "UMEÅ", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
-lines(names(um), um / 1000, type = "l", col = "blue", lty = 2)
+lines(spline(names(um), um / 1000), type = "l", col = "blue", lty = 2)
 text(1911, 11, "Umeå stad", col = "blue")
 sk <- with(skum20[skum20$ortnmn == "SKELLEFTEÅ STAD", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
 ##axis(1, at = c(1901, 1906, 1912, 1921))
 ##axis(2, at = c(1, 2, 3))
 box()
 ##abline(h = c(1, 2, 3), lty = 3, col = "darkgreen")
-lines(names(sk), sk / 1000, type = "l", col = "red", lty = 2)
+lines(spline(names(sk), sk / 1000), type = "l", col = "red", lty = 2)
 text(1945, 3, "Skellefteå stad", col = "red")
 abline(h = 0)
 ##abline(v = c(1901, 1906, 1912, 1921))
@@ -82,16 +83,51 @@ abline(h = 0)
 
 \end{frame}
 
-\begin{frame}{Skellefteå stad 1901-1920}
+\begin{frame}{Skellefteå stad 1901-1950}
+
+<<skstad1>>=
+source("R/pop11.R")
+sk <- with(skum20[skum20$ortnmn == "SKELLEFTEÅ STAD", ], pop11(enter, exit, birthdate, years = c(1901, 1951)))
+plot(sk$tid, sk$pop / 1000, type = "s", col = "red", ylim = c(0, max(sk$pop/1000)), ylab = "Population / 1000", xlab = "", axes = FALSE, xlim = c(1901, 1951), lty = 1)
+yat <- c(1902, 1911, 1913, 1914, 1929, 1933, 1941)
+axis(1, at = yat, labels = paste("1 Jan", yat), las = 2, cex.axis = 0.8)
+axis(2, at = c(0, 1, 3, 5, 10), las = 1)
+box()
+abline(h = c(1, 3, 5, 10, 20, 30), lty = 3, col = "darkgreen")
+abline(h = 0)
+abline(v = yat, lty = 3, col = "darkgreen")
+@
+
+\end{frame}
+
+\begin{frame}{Skellefteå stad 1901-1950 by month}
 
 <<skstad>>=
-plot(names(sk[1:20]), sk[1:20] / 100, type = "l", col = "red", ylim = c(0, max(sk[1:20] / 100)), ylab = "Population / 100", xlab = "Year", axes = FALSE, xlim = c(1900, 1921), lty = 1)
-axis(1, at = c(1901, 1906, 1913, 1920))
-axis(2, at = c(0, 5, 10, 15, 20, 25, 30))
+sk1 <- with(skum20[skum20$ortnmn == "SKELLEFTEÅ STAD", ], pop11(enter, exit, birthdate, years = c(1901, 1951), per.year = 12))
+plot(sk1$tid, sk1$pop / 1000, type = "s", col = "red", ylim = c(0, max(sk1$pop / 1000)), ylab = "Population / 1000", xlab = "", axes = FALSE, xlim = c(1901, 1951), lty = 1)
+
+axis(1, at = yat, labels = paste("1 Jan", yat), las = 2, cex.axis = 0.8)
+axis(2, at = c(0, 1, 3, 5, 10), las = 1)
 box()
-abline(h = c(10, 20, 30), lty = 3, col = "darkgreen")
+abline(h = c(1, 3, 5, 10), lty = 3, col = "darkgreen")
 abline(h = 0)
-abline(v = c(1901, 1906, 1913, 1920), lty = 3, col = "darkgreen")
+abline(v = c(1902, 1911, 1913, 1914, 1916, 1929, 1933, 1941, 1951), lty = 3, col = "darkgreen")
+@
+
+\end{frame}
+
+\begin{frame}{Umeå stad 1901-1950 by month}
+
+<<umstad>>=
+um <- with(skum20[skum20$ortnmn == "UMEÅ", ], pop11(enter, exit, birthdate, years = c(1901, 1951), per.year = 12))
+plot(um$tid, um$pop / 1000, type = "s", col = "red", ylim = c(0, max(um$pop / 1000)), ylab = "Population / 1000", xlab = "", axes = FALSE, xlim = c(1901, 1951), lty = 1)
+yat <- c(1902, 1908, 1925)
+axis(1, at = yat, labels = paste("1 Jan", yat), las = 2, cex.axis = 0.8)
+axis(2, at = c(0, 1, 3, 5, 10, 15), las = 1)
+box()
+abline(h = c(1, 3, 5, 10, 15), lty = 3, col = "darkgreen")
+abline(h = 0)
+abline(v = yat, lty = 3, col = "darkgreen")
 @
 
 \end{frame}
@@ -109,7 +145,17 @@ abline(v = c(1901, 1906, 1913, 1920), lty = 3, col = "darkgreen")
 
 \end{frame}
 
-\begin{frame}{Expected life (e0), Skellefteå 1801-1950}
+\begin{frame}[fragile]{Skellefteå and Umeå regions, closeup}
+  
+\begin{figure}[ht!]
+\includegraphics[height=8cm]{figure/skeume}
+\caption{Skellefteå and Umeå.}
+\end{figure}
+
+\end{frame}
+
+
+\begin{frame}{e0 and e1, Skellefteå 1801-1950}
 
 <<explifes>>=
 source("R/pop2.R")
@@ -131,9 +177,21 @@ for (i in 1:ncol(rat)){
     e0[i] <- integrate(ppch, 0, 100, lower.tail = FALSE, cuts = ct, levels = rat[, i])$value
     e1[i] <- integrate(ppch, 0, 100, lower.tail = FALSE, cuts = ct, levels = c(0, rat[-1, i]))$value
 }
-plot(colnames(rat), e0, type = "s", col = "blue", ylim = c(0, 80), xlab = "Year")
-lines(colnames(rat), e1, type = "s", col = "red")
-abline(h = c(40, 50, 60, 70), lty = 3, col = "darkgreen")
+@
+
+<<plotexplifes>>=
+x <- as.numeric(colnames(rat)) + 2.5
+plot(spline(x, e0), type = "l", col = "blue", ylim = c(0, 70), xlab = "Year", ylab = "e0, e1", axes = FALSE)
+axis(1, at = c(1809, 1867, 1920))
+axis(2, at = c(0, 30, 50, 70), las = 1)
+box()
+
+lines(spline(x, e1 - 1), type = "l", col = "red")
+abline(h = c(30, 50, 70), lty = 3, col = "darkgreen")
+abline(v = c(1809, 1867, 1920), lty = 3, col = "darkgreen")
+text(1870, 40, "e0", col = "blue")
+text(1860, 60, "e1", col = "red")
+abline(h = 0)
 @
 
 \end{frame}
@@ -153,19 +211,49 @@ ef <- numeric(ncol(femrat))
 em <- numeric(ncol(malrat))
 for (i in 1:ncol(malrat)){
     em[i] <- integrate(ppch, 0, 100, lower.tail = FALSE, cuts = ct, levels = malrat[, i])$value
-    ef[i] <- integrate(ppch, 0, 100, lower.tail = FALSE, cuts = ct, levels = c(0, femrat[-1, i]))$value
+    ef[i] <- integrate(ppch, 0, 100, lower.tail = FALSE, cuts = ct, levels = femrat[, i])$value
 }
-plot(colnames(femrat), ef, type = "s", col = "red", ylim = c(0, 80), xlab = "Year", ylab = "e0")
-lines(colnames(femrat), em, type = "s", col = "blue")
+plot(spline(colnames(femrat), ef), col = "red", type = "l", ylim = c(0, 80), xlab = "Year", ylab = "e0", axes = FALSE)
+axis(1, las = 1)
+axis(2, las = 1)
+box()
+lines(spline(colnames(femrat), em), col = "blue", type = "l")
 text(1850, 70, "Women", col = "red")
-text(1850, 40, "Men", col = "blue")
+text(1890, 45, "Men", col = "blue")
+text(1875, 20, "dashed = Sweden")
 abline(h = c(40, 50, 60, 70), col = "darkgreen", lty = 3)
 abline(h = 0)
+load("olv.rda")
+olv$x <- c(1806, 1832, seq(1846, 1946, by = 10))
+lines(spline(olv$x, olv$male), type = "l", col = "blue", lty = 2)
+lines(spline(olv$x, olv$female), type = "l", col = "red", lty = 2)
 @
-
 
 \end{frame}
 
+\begin{frame}[fragile]{Fertility, Skellefteå 1801-1950}
+
+<<fertilskel>>=
+source("R/fert.R")
+dat <- obs[obs$region == "ske", ]
+fems <- numeric(150)
+for (i in 1:150){
+    fems[i] <- fert(dat, c(1800 + i, 1801 + i))
+}
+@
+
+<<plotfertilskel>>=
+plot(spline(1801:1950, fems), type = "l", ylim = c(0, 6), xlab = "Year", ylab = "Births per woman", axes = FALSE, col = "red")
+axis(1, at = c(1813, 1868, 1901, 1941))
+axis(2, at = c(2.1, 4, 5), labels = c("2.1", "4", "5"), las = 1)
+
+abline(v = c(1813, 1868, 1901, 1941), lty = 3, col = "darkgreen")
+box()
+abline(h = 0)
+abline(h = c(2.1, 4, 5), lty = 3, col = "darkgreen")
+@
+
+\end{frame}
 \begin{frame}[fragile]{Median life at 40, Skellefteå}
 
 \includegraphics[height=8cm,width=10cm]{figure/socmen-1}
