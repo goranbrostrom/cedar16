@@ -39,7 +39,7 @@ remYears <- function(dat, ages = c(0, 100), years){
         rate <- c(rate, Inf)
     }
     ##return(rate)
-    res <- integrate(ppch, 0, Inf, lower.tail = FALSE,
+    res <- integrate(ppch, 0, 100, lower.tail = FALSE,
                      cuts = cuts, levels = rate)$value
     invisible(list(res = res, cuts = cuts, rate = rate))
 }
