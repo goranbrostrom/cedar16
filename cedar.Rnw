@@ -236,16 +236,28 @@ lines(spline(olv$x, olv$female), type = "l", col = "red", lty = 2)
 <<bymalesk,echo = FALSE>>=
 skmal <- obs[obs$sex == "male" & obs$region == "ske", ] 
              ##c("enter", "exit", "sluttyp", "birthdate")]
-skmal$event <- skmal$sluttyp == 2
+skmal$event <- !is.na(skmal$sluttyp) & skmal$sluttyp == 2
+skfem <- obs[obs$sex == "female" & obs$region == "ske", ]
+skfem$event <- !is.na(skfem$sluttyp) & skfem$sluttyp == 2
 source("R/remYears.R")
 mmm <- numeric(150)
+fmm <- numeric(150)
 yrs <- 1801:1951
 for (i in 1:150){
     mmm[i] <- remYears(skmal, ages = c(0, 100), 
-                      years = c(yrs[i], yrs[i + 1]))$res
+                       years = c(yrs[i], yrs[i + 1]))$res
+    fmm[i] <- remYears(skfem, ages = c(0, 100), 
+                       years = c(yrs[i], yrs[i + 1]))$res
 }
-plot(spline(yrs[1:150], mmm), type = "l", ylim = c(0, 80))
-abline(v = c(1809, 1868, 1919),  lty = 3, col = "darkgreen")
+@
+
+<<bymaleskplot>>=
+plot(spline(yrs[1:150], mmm), type = "l", ylim = c(0, 80), axes = FALSE, col = "blue", xlab = "Year", ylab = "e0")
+axis(1, at = c(1809, 1857, 1868, 1874, 1918), las = 2)
+axis(2, las = 1)
+box()
+lines(spline(yrs[1:150], fmm), type = "l", col = "red")
+abline(v = c(1809, 1857, 1868, 1874, 1918),  lty = 3, col = "darkgreen")
 @   
 \end{frame}
 
