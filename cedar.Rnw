@@ -231,6 +231,24 @@ lines(spline(olv$x, olv$female), type = "l", col = "red", lty = 2)
 
 \end{frame}
 
+\begin{frame}[fragile]{e0 by sex, Skellefteå 1801-1950, II}
+  
+<<bymalesk,echo = FALSE>>=
+skmal <- obs[obs$sex == "male" & obs$region == "ske", ] 
+             ##c("enter", "exit", "sluttyp", "birthdate")]
+skmal$event <- skmal$sluttyp == 2
+source("R/remYears.R")
+mmm <- numeric(150)
+yrs <- 1801:1951
+for (i in 1:150){
+    mmm[i] <- remYears(skmal, ages = c(0, 100), 
+                      years = c(yrs[i], yrs[i + 1]))$res
+}
+plot(spline(yrs[1:150], mmm), type = "l", ylim = c(0, 80))
+abline(v = c(1809, 1868, 1919),  lty = 3, col = "darkgreen")
+@   
+\end{frame}
+
 \begin{frame}[fragile]{Fertility, Skellefteå 1801-1950}
 
 <<fertilskel>>=
