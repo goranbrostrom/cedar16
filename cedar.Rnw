@@ -33,7 +33,7 @@
 library(knitr)
 opts_chunk$set(engine='R',dev='pdf',fig.path='figs/slide-',tidy=FALSE,fig.height=5.5,fig.width=8,strip.white=TRUE,cache=TRUE,echo=FALSE,message=FALSE,comment=NA,warning=FALSE)##$
 library(skum)
-obs$event <- !is.na(obs$sluttyp) & obs$sluttyp == 2
+obs$event <- !is.na(obs$sluttyp) & obs$sluttyp == 2 ## Note!
 skum20 <- cal.window(obs, c(1901, 1951))
 sk19 <- cal.window(obs[obs$region == "ske", ], c(1801, 1901))
 @
@@ -179,7 +179,7 @@ for (i in 1:ncol(rat)){
 }
 @
 
-<<plotexplifes>>=
+<<plotexplifes,cache=FALSE>>=
 x <- as.numeric(colnames(rat)) + 2.5
 plot(spline(x, e0), type = "l", col = "blue", ylim = c(0, 70), xlab = "Year", ylab = "e0, e1", axes = FALSE)
 axis(1, at = c(1809, 1867, 1920))
@@ -245,9 +245,9 @@ fmm <- numeric(150)
 yrs <- 1801:1951
 for (i in 1:150){
     mmm[i] <- remYears(skmal, ages = c(0, 100), 
-                       years = c(yrs[i], yrs[i + 1]))$res
+                       years = c(yrs[i], yrs[i + 1]))
     fmm[i] <- remYears(skfem, ages = c(0, 100), 
-                       years = c(yrs[i], yrs[i + 1]))$res
+                       years = c(yrs[i], yrs[i + 1]))
 }
 @
 
@@ -258,6 +258,11 @@ axis(2, las = 1)
 box()
 lines(spline(yrs[1:150], fmm), type = "l", col = "red")
 abline(v = c(1809, 1857, 1868, 1874, 1918),  lty = 3, col = "darkgreen")
+lines(spline(olv$x, olv$male), type = "l", col = "blue", lty = 2, lwd = 2)
+lines(spline(olv$x, olv$female), type = "l", col = "red", lty = 2, lwd = 2)
+text(1825, 70, "Women", col = "red")
+text(1825, 30, "Men", col = "blue")
+text(1895, 35, "dashed = Sweden")
 @   
 \end{frame}
 
@@ -276,14 +281,104 @@ for (i in 1:150){
 plot(spline(1801:1950, fems), type = "l", ylim = c(0, 6), xlab = "Year", ylab = "Births per woman", axes = FALSE, col = "red")
 axis(1, at = c(1813, 1868, 1901, 1941))
 axis(2, at = c(2.1, 4, 5), labels = c("2.1", "4", "5"), las = 1)
-
+load("totfert.rda")
+lines(spline(seq(1803, 1948, by = 5), totfert$tot / 1000), type = "l", col = "blue")
 abline(v = c(1813, 1868, 1901, 1941), lty = 3, col = "darkgreen")
 box()
 abline(h = 0)
 abline(h = c(2.1, 4, 5), lty = 3, col = "darkgreen")
+text(1850, 5.6, "Skellefteå", col = "red")
+text(1885, 3.2, "Sweden", col = "blue")
 @
 
 \end{frame}
+
+\begin{frame}[fragile]{e0 by sex, 1901-1950}
+  
+<<bymaleskum>>=
+smm <- mmm[101:150]
+sfm <- fmm[101:150]
+ummal <- obs[obs$sex == "male" & obs$region == "ume", ]
+ummal$event <- !is.na(ummal$sluttyp) & ummal$sluttyp == 2
+umfem <- obs[obs$sex == "female" & obs$region == "ume", ]
+umfem$event <- !is.na(umfem$sluttyp) & umfem$sluttyp == 2
+
+umm <- numeric(50)
+ufm <- numeric(50)
+yrs <- 1901:1951
+for (i in 1:50){
+    ##cat("; i = ", i, "\n")
+    umm[i] <- remYears(ummal, ages = c(0, 100), 
+                       years = c(yrs[i], yrs[i + 1]))
+    ufm[i] <- remYears(umfem, ages = c(0, 100), 
+                       years = c(yrs[i], yrs[i + 1]))
+}
+@
+   
+<<bymaleskumplot,cache=FALSE>>=
+oldpar <- par(mfrow = c(1, 2))
+plot(spline(yrs[1:50], smm), type = "l", ylim = c(45, 75), axes = FALSE, col = "blue", xlab = "Year", ylab = "e0", main = "Skellefteå")
+axis(1, at = c(1901, 1918, 1950), las = 1)
+axis(2, las = 1)
+box()
+lines(spline(yrs[1:50], sfm), type = "l", col = "red")
+abline(v = c(1901, 1918, 1950),  lty = 3, col = "darkgreen")
+text(1925, 67, "Women", col = "red")
+text(1925, 50, "Men", col = "blue")
+abline(h = c(60, 70), lty = 3, col = "darkgreen")
+
+plot(spline(yrs[1:50], umm), lty = 1, type = "l", col = "blue", 
+     ylim = c(45, 75), axes = FALSE, xlab = "Year", ylab = "e0", 
+     main = "Umeå")
+axis(1, at = c(1901, 1918, 1950), las = 1)
+axis(2, las = 1)
+box()
+
+lines(spline(yrs[1:50], ufm), lty = 1, type = "l", col = "red")
+text(1925, 67, "Women", col = "red")
+text(1925, 50, "Men", col = "blue")
+abline(v = c(1901, 1918, 1950),  lty = 3, col = "darkgreen")
+abline(h = c(60, 70), lty = 3, col = "darkgreen")
+par(oldpar)
+@ 
+
+\end{frame}
+
+\begin{frame}[fragile]{Fertility 1901-1950}
+
+<<fertilskelume>>=
+source("R/fert.R")
+dat <- obs[obs$region == "ske", ]
+sfems <- numeric(50)
+for (i in 1:50){
+    sfems[i] <- fert(dat, c(1900 + i, 1901 + i))
+}
+
+dat <- obs[obs$region == "ume", ]
+ufems <- numeric(50)
+for (i in 1:50){
+    ufems[i] <- fert(dat, c(1900 + i, 1901 + i))
+}
+
+@
+
+<<plotfertilskelume,cache=FALSE>>=
+plot(spline(1901:1950, sfems), type = "l", ylim = c(0, 6), xlab = "Year", ylab = "Births per woman", axes = FALSE, col = "red")
+axis(1, at = c(1901, 1921, 1941))
+axis(2, at = c(2.1, 4, 5), labels = c("2.1", "4", "5"), las = 1)
+lines(spline(1901:1950, ufems), type = "l", col = "blue")
+##load("totfert.rda")
+##lines(spline(seq(1803, 1948, by = 5), totfert$tot / 1000), type = "l", col = "blue")
+abline(v = c(1901, 1921, 1941), lty = 3, col = "darkgreen")
+box()
+abline(h = 0)
+abline(h = c(2.1, 4, 5), lty = 3, col = "darkgreen")
+text(1925, 4.6, "Skellefteå", col = "red")
+text(1935, 1.2, "Umeå", col = "blue")
+@
+
+\end{frame}
+
 \begin{frame}[fragile]{Median life at 40, Skellefteå}
 
 \includegraphics[height=8cm,width=10cm]{figure/socmen-1}
