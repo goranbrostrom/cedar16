@@ -17,13 +17,13 @@ fert <- function(dat, years = c(1950, 1951)){
     indx <- match(born$mid, per$id)
     born$m.birthdate <- toTime(per$foddat[indx])
     born$m.age <- born$birthdate - born$m.birthdate
-    ##cat("sum(is.na(born$mid)) = ", sum(is.na(born$mid)))
+    ##cat("sum(is.na(born$mid)) = ", sum(is.na(born$mid)), "\n")
     born <- born[, c("id", "mid", "m.age")]
     
     ## Then, 'women-years':
     fem <- dat[dat$sex == "female", c("id", "enter", "exit", "event", "birthdate")]
     ##cat("dim(fem) = ", dim(fem), "\n")
-    #return(fem)
+    ##return(fem)
     #fem <- cal.window(fem, years)
     ##fem <- age.window(fem, c(15, 50))
     oo <- with(fem, perstat(cbind(enter, exit, event, birthdate), age = seq(15, 50, by = 1), period = years))$exposure
