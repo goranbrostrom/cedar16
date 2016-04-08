@@ -1,0 +1,3 @@
+infmort <- function(dat, byears){
+    
+}
