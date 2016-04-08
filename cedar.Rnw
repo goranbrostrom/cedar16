@@ -293,6 +293,10 @@ text(1885, 3.2, "Sweden", col = "blue")
 
 \end{frame}
 
+\begin{frame}[fragile]{Infant mortality by branch}
+
+
+\end{frame}
 
 \begin{frame}[fragile]{Fertility by branch, Skellefteå 1801-1950}
 
@@ -310,14 +314,14 @@ for (i in 1:150){
 
 <<plotfertilskelbranch>>=
 plot(spline(1801:1950, fems), type = "l", ylim = c(0, 6.3), xlab = "Year", ylab = "Births per woman", axes = FALSE, col = "red")
-axis(1, at = c(1813, 1868, 1890, 1941))
-axis(2, at = c(2.1, 4, 5), labels = c("2.1", "4", "5"), las = 1)
+axis(1, at = c(1813, 1868, 1890, 1926, 1941))
+axis(2, at = c(2.1, 4, 5, 6), labels = c("2.1", "4", "5", "6"), las = 1)
 #load("totfert.rda")
 lines(spline(1801:1950, farms), type = "l", col = "blue")
-abline(v = c(1813, 1868, 1890, 1941), lty = 3, col = "darkgreen")
+abline(v = c(1813, 1868, 1890, 1926, 1941), lty = 3, col = "darkgreen")
 box()
 abline(h = 0)
-abline(h = c(2.1, 4, 5), lty = 3, col = "darkgreen")
+abline(h = c(2.1, 4, 5, 6), lty = 3, col = "darkgreen")
 text(1885, 3.6, "Non-farming", col = "red")
 text(1910, 5.2, "Farming", col = "blue")
 @
