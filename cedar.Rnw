@@ -34,6 +34,7 @@ library(knitr)
 opts_chunk$set(engine='R',dev='pdf',fig.path='figs/slide-',tidy=FALSE,fig.height=5.5,fig.width=8,strip.white=TRUE,cache=TRUE,echo=FALSE,message=FALSE,comment=NA,warning=FALSE)##$
 library(skum)
 obs$event <- !is.na(obs$sluttyp) & obs$sluttyp == 2 ## Note!
+
 skum20 <- cal.window(obs, c(1901, 1951))
 sk19 <- cal.window(obs[obs$region == "ske", ], c(1801, 1901))
 @
@@ -45,6 +46,21 @@ sk19 <- cal.window(obs[obs$region == "ske", ], c(1801, 1901))
 \end{itemize}
 
 
+\end{frame}
+
+\begin{frame}[fragile]{From the obs file}
+  
+<<theobs>>=
+source("R/showID.R")
+showID(55, obs)
+@ 
+\end{frame}
+\begin{frame}[fragile]{More from the obs file}
+  
+<<theobsmore>>=
+source("R/showID.R")
+showID(463315, obs)
+@ 
 \end{frame}
 
 \begin{frame}[fragile]{Old and new data}
@@ -274,6 +290,7 @@ lines(spline(olv$x, olv$female), type = "l", col = "red", lty = 2)
 \begin{frame}[fragile]{e0 by sex, Skellefteå 1801-1950, II}
   
 <<bymalesk,echo = FALSE>>=
+
 skmal <- obs[obs$sex == "male" & obs$region == "ske", ] 
              ##c("enter", "exit", "sluttyp", "birthdate")]
 skmal$event <- !is.na(skmal$sluttyp) & skmal$sluttyp == 2
