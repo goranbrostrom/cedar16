@@ -27,7 +27,7 @@
 
 \maketitle
 
-\begin{frame}{Outline}
+\begin{frame}[fragile]{Outline}
 
 <<setup, include = FALSE>>=
 library(knitr)
@@ -35,14 +35,30 @@ opts_chunk$set(engine='R',dev='pdf',fig.path='figs/slide-',tidy=FALSE,fig.height
 library(skum)
 obs$event <- !is.na(obs$sluttyp) & obs$sluttyp == 2 ## Note!
 
-skum20 <- cal.window(obs, c(1901, 1951))
+skum20 <- cal.window(obs, c(1901, 1951.1))
 sk19 <- cal.window(obs[obs$region == "ske", ], c(1801, 1901))
 @
 
 \begin{itemize}
-\item New data for Skellefteå and Umeå
-\item Long-term trends for Skellefteå
-\item Skellefteå and Umeå 1901-1950.
+\item New data for Skellefteå and Umeå.
+\begin{itemize}
+  \item From \emp{PopLink}, DDB, 2016.
+  \item Contained in the {\bf \emp{R}} package \emp{skum}.
+  \end{itemize}
+\item Long-term trends for Skellefteå, 1801--1950.
+  \begin{itemize}
+  \item "Demographic transitions"
+  \end{itemize}
+\item Skellefteå and Umeå 1901--1950.
+  \begin{itemize}
+  \item Description
+  \item Research
+      and influence of \emp{SES}.
+    \begin{enumerate}
+    \item \emp{Fertility}
+    \item \emp{Adult mortality}
+     \end{enumerate}
+    \end{itemize}
 \end{itemize}
 
 
@@ -105,33 +121,34 @@ par(oldpar)
 @ 
 \end{frame}
 
-\begin{frame}{Populations over time}
+\begin{frame}{Populations over time, 1901-1950}
   
 <<popu>>=
 source("R/pop1.R")
-um <- with(skum20[skum20$region == "ume", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
-sk <- with(skum20[skum20$region == "ske", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
-plot(spline(names(sk), sk / 1000), type = "l", col = "red", ylim = c(0, max(sk/1000)), axes = FALSE,
-     ylab = "Population / 1000", xlab = "Calendar time")
-lines(spline(names(um),  um / 1000), col = "blue", type = "l")
-yrlab <- c(1901, 1913, 1921, 1931, 1941, 1951)
-axis(1, at = yrlab, labels = c(paste("1 Jan", yrlab[-length(yrlab)]), "31 Dec 1950"), cex.axis = 0.8)
+um <- with(skum20[skum20$region == "ume", ], pop1(enter, exit, birthdate, years = c(1901, 1950)))
+sk <- with(skum20[skum20$region == "ske", ], pop1(enter, exit, birthdate, years = c(1901, 1950)))
+plot(spline(as.numeric(names(sk)) + 0.5, sk / 1000), 
+     type = "l", col = "red", ylim = c(0, max(sk/1000)), axes = FALSE,
+     ylab = "Populationoj / 1000", xlab = "Year")
+lines(spline(as.numeric(names(um)) + 0.5,  um / 1000), col = "blue", type = "l")
+yrlab <- c(1901, 1913, 1921, 1931, 1941, 1950)
+axis(1, at = yrlab + 0.5, labels = yrlab, cex.axis = 0.8)
 axis(2, at = c(0, 10, 20, 40, 60), las = 1)
 box()
 abline(h = 0)
-abline(v = c(1901, 1913, 1921, 1931, 1941, 1951), lty = 3, col = "darkgreen")
+abline(v = c(1901, 1913, 1921, 1931, 1941, 1950) + 0.5, lty = 3, col = "darkgreen")
 abline(h = c(10, 20, 40, 60), lty = 3, col = "darkgreen")
 text(1905, 55, "Skellefteå region", col = "red")
 text(1905, 28, "Umeå region", col = "blue")
-um <- with(skum20[skum20$ortnmn == "UMEÅ", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
-lines(spline(names(um), um / 1000), type = "l", col = "blue", lty = 2)
+um <- with(skum20[skum20$ortnmn == "UMEÅ", ], pop1(enter, exit, birthdate, years = c(1901, 1950)))
+lines(spline(as.numeric(names(um)) + 0.5, um / 1000), type = "l", col = "blue", lty = 2)
 text(1911, 11, "Umeå stad", col = "blue")
-sk <- with(skum20[skum20$ortnmn == "SKELLEFTEÅ STAD", ], pop1(enter, exit, birthdate, years = c(1901, 1951)))
+sk <- with(skum20[skum20$ortnmn == "SKELLEFTEÅ STAD", ], pop1(enter, exit, birthdate, years = c(1901, 1950)))
 ##axis(1, at = c(1901, 1906, 1912, 1921))
 ##axis(2, at = c(1, 2, 3))
 box()
 ##abline(h = c(1, 2, 3), lty = 3, col = "darkgreen")
-lines(spline(names(sk), sk / 1000), type = "l", col = "red", lty = 2)
+lines(spline(as.numeric(names(sk)) + 0.5, sk / 1000), type = "l", col = "red", lty = 2)
 text(1945, 3, "Skellefteå stad", col = "red")
 abline(h = 0)
 ##abline(v = c(1901, 1906, 1912, 1921))
@@ -139,35 +156,37 @@ abline(h = 0)
 
 \end{frame}
 
-\begin{frame}{Skellefteå stad 1901-1950}
+%% \begin{frame}{Skellefteå stad 1901-1950}
 
-<<skstad1>>=
-source("R/pop11.R")
-sk <- with(skum20[skum20$ortnmn == "SKELLEFTEÅ STAD", ], pop11(enter, exit, birthdate, years = c(1901, 1951)))
-plot(sk$tid, sk$pop / 1000, type = "s", col = "red", ylim = c(0, max(sk$pop/1000)), ylab = "Population / 1000", xlab = "", axes = FALSE, xlim = c(1901, 1951), lty = 1)
-yat <- c(1902, 1911, 1913, 1914, 1929, 1933, 1941)
-axis(1, at = yat, labels = paste("1 Jan", yat), las = 2, cex.axis = 0.8)
-axis(2, at = c(0, 1, 3, 5, 10), las = 1)
-box()
-abline(h = c(1, 3, 5, 10, 20, 30), lty = 3, col = "darkgreen")
-abline(h = 0)
-abline(v = yat, lty = 3, col = "darkgreen")
-@
+%% <<skstad1>>=
+%% source("R/pop11.R")
+%% sk <- with(skum20[skum20$ortnmn == "SKELLEFTEÅ STAD", ], pop11(enter, exit, birthdate, years = c(1901, 1951)))
+%% plot(sk$tid, sk$pop / 1000, type = "s", col = "red", ylim = c(0, max(sk$pop/1000)), ylab = "Population / 1000", xlab = "", axes = FALSE, xlim = c(1901, 1951), lty = 1)
+%% yat <- c(1902, 1911, 1913, 1914, 1929, 1933, 1941)
+%% axis(1, at = yat, labels = paste("1 Jan", yat), las = 2, cex.axis = 0.8)
+%% axis(2, at = c(0, 1, 3, 5, 10), las = 1)
+%% box()
+%% abline(h = c(1, 3, 5, 10, 20, 30), lty = 3, col = "darkgreen")
+%% abline(h = 0)
+%% abline(v = yat, lty = 3, col = "darkgreen")
+%% @
 
-\end{frame}
+%% \end{frame}
 
 \begin{frame}{Skellefteå stad 1901-1950 by month}
 
 <<skstad>>=
+source("R/pop11.R")
 sk1 <- with(skum20[skum20$ortnmn == "SKELLEFTEÅ STAD", ], pop11(enter, exit, birthdate, years = c(1901, 1951), per.year = 12))
 plot(sk1$tid, sk1$pop / 1000, type = "s", col = "red", ylim = c(0, max(sk1$pop / 1000)), ylab = "Population / 1000", xlab = "", axes = FALSE, xlim = c(1901, 1951), lty = 1)
+yat <- c(1902, 1912, 1914, 1929, 1932, 1941)
 
 axis(1, at = yat, labels = paste("1 Jan", yat), las = 2, cex.axis = 0.8)
 axis(2, at = c(0, 1, 3, 5, 10), las = 1)
 box()
 abline(h = c(1, 3, 5, 10), lty = 3, col = "darkgreen")
 abline(h = 0)
-abline(v = c(1902, 1911, 1913, 1914, 1916, 1929, 1933, 1941, 1951), lty = 3, col = "darkgreen")
+abline(v = yat, lty = 3, col = "darkgreen")
 @
 
 \end{frame}
@@ -177,7 +196,7 @@ abline(v = c(1902, 1911, 1913, 1914, 1916, 1929, 1933, 1941, 1951), lty = 3, col
 <<umstad>>=
 um <- with(skum20[skum20$ortnmn == "UMEÅ", ], pop11(enter, exit, birthdate, years = c(1901, 1951), per.year = 12))
 plot(um$tid, um$pop / 1000, type = "s", col = "red", ylim = c(0, max(um$pop / 1000)), ylab = "Population / 1000", xlab = "", axes = FALSE, xlim = c(1901, 1951), lty = 1)
-yat <- c(1902, 1908, 1925)
+yat <- 1925
 axis(1, at = yat, labels = paste("1 Jan", yat), las = 2, cex.axis = 0.8)
 axis(2, at = c(0, 1, 3, 5, 10, 15), las = 1)
 box()
