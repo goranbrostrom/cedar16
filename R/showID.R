@@ -1,4 +1,4 @@
-showID <- function(id, dat){
+showID <- function(id, dat, civst = TRUE, soc = TRUE){
     ## 'dat' must be a data frame ala 'obs' in 'skum'.
     ## Plot in calendar time.
 
@@ -11,16 +11,24 @@ showID <- function(id, dat){
     farg <- c("blue", "darkgreen", "black", "red")
     colo <- character(n)
     for (i in 1:n){
-        colo[i] <- farg[sev[i]]
+        if (soc){
+            colo[i] <- farg[sev[i]]
+        }else{
+            colo[i] <- "blue"
+        }
     }
     ltyp <- numeric(n)
     for (i in 1:n){
-        if (guy$civst[i] == "unmarried"){
-            ltyp[i] <- 2
-        }else if (guy$civst[i] == "married"){
-            ltyp[i] <- 1
+        if (civst){
+            if (guy$civst[i] == "unmarried"){
+                ltyp[i] <- 2
+            }else if (guy$civst[i] == "married"){
+                ltyp[i] <- 1
+            }else{
+                ltyp[i] <- 4
+            }
         }else{
-            ltyp[i] <- 4
+            ltyp[i] <- 1
         }
     }
     start <- guy$starttyp
@@ -45,7 +53,7 @@ showID <- function(id, dat){
          main = paste("ID = ", id, " (", guy$sex[1], ")", sep = ""))
     axis(1, at = c(guy$birthdate[1], max(exit)),
          labels = labs, las = 1, cex.axis = 1)
-    axis(2)
+    axis(2, at = 1:n)
     box()
     ##abline(h = c(1, 2, 4:9), lty = 3, col = "darkgreen")
     points(guy$birthdate[1], 0, col = "blue", cex = 2)
