@@ -64,6 +64,58 @@ sk19 <- cal.window(obs[obs$region == "ske", ], c(1801, 1901))
 
 \end{frame}
 
+\begin{frame}{DDB, Skellefteå and Umeå Data}
+
+\begin{itemize}
+\item Uttag \emp{U15014}, Version 2 (4 February 2016): \emp{Poplink}.
+  \begin{itemize}
+  \item \emp{PERSON} (static).
+  \item \emp{NÄRVARO} (dynamic).
+  \end{itemize}
+\item {\bf \emp{R}} package \emp{\tt skum} 
+  \begin{itemize}
+    \item PERSON: Two data frames:
+      \begin{itemize}
+        \item \emp{\tt persons}
+        \item \emp{\tt per}  
+      \end{itemize}
+    \item NÄRVARO:  Three data frames:
+      \begin{itemize}
+        \item \emp{\tt narvaro}
+        \item \emp{\tt observations}
+        \item \emp{\tt obs}
+        \end{itemize}
+      \end{itemize}
+\end{itemize}
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Skellefteå and Umeå regions}
+  
+\begin{figure}[ht!]
+\includegraphics[width=0.75\textwidth]{figure/skeume}
+\caption{Skellefteå and Umeå.}
+\end{figure}
+
+\end{frame}
+
+\begin{frame}[fragile]{Old and new data}
+
+\includegraphics[width=\textwidth]{figs/slide-wegot-1}
+  
+\end{frame}
+
+\begin{frame}[fragile]{Who am I?}
+  
+<<whoami,echo = TRUE>>=
+per[with(per, 
+         !is.na(foddat) & foddat == "1942-04-27"), 
+    c("id", "kon", "mid", "fid", "fyrketxt")]
+    
+@   
+\end{frame}
+
 \begin{frame}[fragile]{From the obs file}
   
 <<theobs>>=
@@ -71,6 +123,7 @@ source("R/showID.R")
 showID(55, obs)
 @ 
 \end{frame}
+
 \begin{frame}[fragile]{More from the obs file}
   
 <<theobsmore>>=
@@ -79,47 +132,55 @@ showID(463315, obs)
 @ 
 \end{frame}
 
-\begin{frame}[fragile]{Old and new data}
+\begin{frame}[fragile]{Raw from the observations file}
   
-<<wegot>>=
-library(skel14)
-source("R/pop1.R")
-dat <- skel14::obs[, c("enter", "exit", "event", "birthdate")]
-oldsk <- with(dat, pop1(enter, exit, birthdate, years = c(1801, 1961)))
-oldpar <- par(mfrow = c(1, 2))
-dat <- skum::obs[skum::obs$region == "ske", ]
-dat$event <- with(dat, !is.na(sluttyp) & sluttyp == 2)
-newsk <- with(dat, pop1(enter, exit, birthdate, years = c(1801, 1961)))
-plot(spline(names(oldsk), oldsk / 1000), type = "l", ylim = c(0, 70),
-     xlab = "Year", ylab = "Population / 1000", axes = FALSE, 
-     col = "blue", main = "Skellefteå")
-axis(1, at = c(1801, 1901, 1921, 1950))
-axis(2, at = c(0, 10, 20, 40, 60), las = 1)
-box()
-text(1860, 30, "New", col = "red")
-text(1905, 22, "Old", col = "blue")
-abline(h = c(0, 10, 20, 40, 60), col = "darkgreen", lty = 3)
-abline(v = c(1901, 1921, 1950), col = "darkgreen", lty = 3)
-lines(spline(names(newsk), newsk / 1000), type = "l", col = "red")
-abline(h = 0)
-dat <- skum::obs[skum::obs$region == "ume", ]
-dat$event <- with(dat, !is.na(sluttyp) & sluttyp == 2)
-newum <- with(dat, pop1(enter, exit, birthdate, years = c(1801, 1961)))
-plot(spline(names(newum), newum / 1000), type = "l", ylim = c(0, 70),
-     xlab = "Year", ylab = "Population / 1000", axes = FALSE, 
-     col = "red", main = "Umeå")
-axis(1, at = c(1801, 1901, 1921, 1950))
-axis(2, at = c(0, 10, 20, 40), las = 1)
-box()
-text(1870, 30, "New", col = "red")
-abline(h = c(0, 10, 20, 40), col = "darkgreen", lty = 3)
-abline(v = c(1901, 1921, 1950), col = "darkgreen", lty = 3)
-##lines(spline(names(newsk), newsk / 1000), type = "l", col = "red")
-abline(h = 0)
-
-par(oldpar)
+<<theobservations>>=
+source("R/id463315.R")
+id463315()
 @ 
 \end{frame}
+
+%% \begin{frame}[fragile]{Old and new data}
+  
+%% <<wegot>>=
+%% library(skel14)
+%% source("R/pop1.R")
+%% dat <- skel14::obs[, c("enter", "exit", "event", "birthdate")]
+%% oldsk <- with(dat, pop1(enter, exit, birthdate, years = c(1801, 1961)))
+%% oldpar <- par(mfrow = c(1, 2))
+%% dat <- skum::obs[skum::obs$region == "ske", ]
+%% dat$event <- with(dat, !is.na(sluttyp) & sluttyp == 2)
+%% newsk <- with(dat, pop1(enter, exit, birthdate, years = c(1801, 1961)))
+%% plot(spline(names(oldsk), oldsk / 1000), type = "l", ylim = c(0, 70),
+%%      xlab = "Year", ylab = "Population / 1000", axes = FALSE, 
+%%      col = "blue", main = "Skellefteå")
+%% axis(1, at = c(1801, 1901, 1921, 1950))
+%% axis(2, at = c(0, 10, 20, 40, 60), las = 1)
+%% box()
+%% text(1860, 30, "New", col = "red")
+%% text(1905, 22, "Old", col = "blue")
+%% abline(h = c(0, 10, 20, 40, 60), col = "darkgreen", lty = 3)
+%% abline(v = c(1901, 1921, 1950), col = "darkgreen", lty = 3)
+%% lines(spline(names(newsk), newsk / 1000), type = "l", col = "red")
+%% abline(h = 0)
+%% dat <- skum::obs[skum::obs$region == "ume", ]
+%% dat$event <- with(dat, !is.na(sluttyp) & sluttyp == 2)
+%% newum <- with(dat, pop1(enter, exit, birthdate, years = c(1801, 1961)))
+%% plot(spline(names(newum), newum / 1000), type = "l", ylim = c(0, 70),
+%%      xlab = "Year", ylab = "Population / 1000", axes = FALSE, 
+%%      col = "red", main = "Umeå")
+%% axis(1, at = c(1801, 1901, 1921, 1950))
+%% axis(2, at = c(0, 10, 20, 40), las = 1)
+%% box()
+%% text(1870, 30, "New", col = "red")
+%% abline(h = c(0, 10, 20, 40), col = "darkgreen", lty = 3)
+%% abline(v = c(1901, 1921, 1950), col = "darkgreen", lty = 3)
+%% ##lines(spline(names(newsk), newsk / 1000), type = "l", col = "red")
+%% abline(h = 0)
+
+%% par(oldpar)
+%% @ 
+%% \end{frame}
 
 \begin{frame}{Populations over time, 1901-1950}
   
@@ -207,27 +268,14 @@ abline(v = yat, lty = 3, col = "darkgreen")
 
 \end{frame}
 
-\begin{frame}{DDB, Skellefteå and Umeå Data}
-
-\end{frame}
-
-\begin{frame}[fragile]{Skellefteå and Umeå regions}
+%% \begin{frame}[fragile]{Skellefteå and Umeå regions}
   
-\begin{figure}[ht!]
-\includegraphics[height=8cm]{figure/sweden}
-\caption{Skellefteå and Umeå in Sweden.}
-\end{figure}
+%% \begin{figure}[ht!]
+%% \includegraphics[height=8cm]{figure/sweden}
+%% \caption{Skellefteå and Umeå in Sweden.}
+%% \end{figure}
 
-\end{frame}
-
-\begin{frame}[fragile]{Skellefteå and Umeå regions, closeup}
-  
-\begin{figure}[ht!]
-\includegraphics[height=8cm]{figure/skeume}
-\caption{Skellefteå and Umeå.}
-\end{figure}
-
-\end{frame}
+%% \end{frame}
 
 
 \begin{frame}{e0 and e1, Skellefteå 1801-1950}
@@ -477,12 +525,12 @@ for (i in 1:50){
 
 <<plotfertilskelume,cache=FALSE>>=
 plot(spline(1901:1950, sfems), type = "l", ylim = c(0, 6), xlab = "Year", ylab = "Births per woman", axes = FALSE, col = "red")
-axis(1, at = c(1901, 1921, 1941))
+axis(1, at = c(1901, 1911, 1921, 1931, 1941))
 axis(2, at = c(2.1, 4, 5), labels = c("2.1", "4", "5"), las = 1)
 lines(spline(1901:1950, ufems), type = "l", col = "blue")
 ##load("totfert.rda")
 ##lines(spline(seq(1803, 1948, by = 5), totfert$tot / 1000), type = "l", col = "blue")
-abline(v = c(1901, 1921, 1941), lty = 3, col = "darkgreen")
+abline(v = c(1901, 1911, 1921, 1931, 1941), lty = 3, col = "darkgreen")
 box()
 abline(h = 0)
 abline(h = c(2.1, 4, 5), lty = 3, col = "darkgreen")
@@ -490,6 +538,96 @@ text(1925, 4.6, "Skellefteå", col = "red")
 text(1935, 1.2, "Umeå", col = "blue")
 @
 
+\end{frame}
+
+%% \begin{frame}[fragile]{Cumulative fertility}
+
+%% <<aspf>>=
+%% load("births.rda")
+%% oldpar <- par(mfrow = c(2, 3))
+%% for (i in levels(births$period)){
+%%     fit <- phreg(Surv(enter - 15, exit - 15, event) ~ strata(region), 
+%%                  data = births[births$period == i, ], 
+%%                  dist = "pch", cuts = c(1:33))
+%%     plot(fit, fn = "cum", xlab = "Age - 15", main = i, ylim = c(0, 4.5), 
+%%          col = c("red", "blue"), lwd = 1.5, ylab = "No. of births")
+%%     abline(h = 2.1, col = "darkgreen", lty = 3, lwd = 1.5)
+%%     abline(h = 0)
+%% }
+%% fit <- phreg(Surv(enter - 15, exit - 15, event) ~ strata(region), 
+%%              data = births, 
+%%              dist = "pch", cuts = c(1:33))
+%% plot(fit, fn = "cum", xlab = "Age - 15", main = "1901-1950", ylim = c(0, 4.5), 
+%%      col = c("red", "blue"), lwd = 1.5, ylab = "No. of births")
+%% abline(h = 2.1, col = "darkgreen", lty = 3, lwd = 1.5)
+%% abline(h = 0)
+
+%% par(oldpar)
+%% @ 
+  
+%% \end{frame}  
+
+\begin{frame}[fragile]{Cohort fertility}
+
+<<coferlx>>=
+plot(c(1901, 1951), c(15, 15), type = "l", xlim = c(1880, 1951), 
+     ylim = c(0, 50), xlab = "Year", ylab = "Age", axes = FALSE, lty = 2)
+axis(1, at = c(1881, 1901, 1921, 1936, 1951))
+axis(2, at = c(0, 15, 20, 50), las = 1)
+box()
+lines(c(1901, 1936), c(15, 15), col = "blue", lwd = 2)
+lines(c(1901, 1901), c(15, 50), lty = 2)
+lines(c(1901, 1901), c(15, 20), col = "blue", lwd = 2)
+lines(c(1951, 1951), c(15, 50), lty = 2)
+lines(c(1951, 1951), c(30, 50), col = "blue", lwd = 2)
+lines(c(1901, 1951), c(50, 50), lty = 2)
+lines(c(1931, 1951), c(50, 50), col = "blue", lwd = 2)
+lines(c(1881, 1931), c(0, 50), col = "blue", lty = 2)
+lines(c(1901, 1931), c(20, 50), col = "blue", lwd = 2)
+lines(c(1921, 1951), c(0, 30), col = "blue", lty = 2)
+lines(c(1936, 1951), c(15, 30), col = "blue", lwd = 2)
+abline(h = 0)
+text(1930, 30, "Here!", col = "red")
+@ 
+\end{frame}
+
+\begin{frame}[fragile]{Fertility as a counting process}
+  
+\includegraphics[width = \textwidth]{figure/slide1-countbir-1.pdf}
+
+\end{frame}  
+
+\begin{frame}[fragile]{Intensity estimation}
+  
+<<fral>>=
+load("ww.rda")
+fit <- phreg(Surv(enter - 15, exit - 15, birth) ~ strata(region), data = ww,
+             dist = "pch", cuts = 1:33)
+plot(fit, fn = "haz", col = c("red", "blue"), xlab = "Age - 15")
+@   
+\end{frame}
+
+\begin{frame}[fragile]{Crude cumulative hazards}
+  
+<<fralcum>>=
+plot(fit, fn = "cum", col = c("red", "blue"), 
+     xlab = "Age - 15", ylim = c(0, 4.5))
+abline(h = 2.1, lty = 3, col = "darkgreen")
+abline(h = 0)
+@ 
+\end{frame}
+
+\begin{frame}[fragile]{Cumulative hazards by socBranch}
+  
+<<fralcumsoc>>=
+ww$socBranch <- relevel(ww$socBranch, ref = "farming")
+fit <- phreg(Surv(enter - 15, exit - 15, birth) ~ strata(region) + socBranch, 
+data = ww, dist = "pch", cuts = 1:33)
+plot(fit, fn = "cum", col = c("red", "blue"), 
+     xlab = "Age - 15")
+abline(h = 2.1, lty = 3, col = "darkgreen")
+abline(h = 0)
+@ 
 \end{frame}
 
 \begin{frame}[fragile]{Median life at 40, Skellefteå}
