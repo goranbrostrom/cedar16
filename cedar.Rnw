@@ -106,6 +106,29 @@ sk19 <- cal.window(obs[obs$region == "ske", ], c(1801, 1901))
   
 \end{frame}
 
+\begin{frame}[fragile]{The {\sc person} file}
+
+  Static data (294\,446 records):
+\tiny
+
+<<statdat, echo=TRUE>>=
+library(skum)
+head(persons, 5)
+@   
+
+\end{frame}
+
+\begin{frame}[fragile]{The {\sc observations} file}
+
+Dynamic data (1\,046\,356 records, 290\,541 persons):
+\tiny
+
+<<dymdat, echo=TRUE>>=
+tail(observations, 5)
+@   
+
+\end{frame}  
+
 \begin{frame}[fragile]{Who am I?}
   
 <<whoami,echo = TRUE>>=
@@ -114,6 +137,7 @@ per[with(per,
     c("id", "kon", "mid", "fid", "fyrketxt")]
     
 @   
+
 \end{frame}
 
 \begin{frame}[fragile]{From the obs file}
@@ -122,6 +146,7 @@ per[with(per,
 source("R/showID.R")
 showID(55, obs)
 @ 
+
 \end{frame}
 
 \begin{frame}[fragile]{More from the obs file}
