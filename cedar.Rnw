@@ -709,10 +709,27 @@ levels(skum20$civst) <- c("married", "unmarried", "prevMarried",
                           "prevMarried", "prevMarried") 
 old <- age.window(skum20, c(60, 100))
 fit <- coxreg(Surv(enter, exit, event) ~ I(birthdate - 1860) + sex + civst + socBranch + region, 
-              data = old)
+              hazards = FALSE, data = old)
 dr <- drop1(fit, test = "Chisq")
 ltx(fit, dr = dr)
 @   
+
+\end{frame}
+
+\begin{frame}[fragile]{Old age survival}
+
+<<oldagesurv,cache=FALSE>>=
+fit <- coxph(Surv(enter, exit, event) ~ I(birthdate - 1860) + sex + civst + socBranch + strata(region), data = old)
+plot(survfit(fit), mark.time = FALSE, xlim = c(60, 100), col = c("red", "blue"),
+     xlab = "Age", ylab = "Surviving fraction", axes = FALSE)
+axis(1)
+axis(2, at = c(0, 0.25, 0.50, 0.74, 1), las = 1)
+box()
+abline(h = 0)
+abline(h = 0.5, lty = 2, col = "darkgreen")
+text(79, 0.7, "Skellefteå", col = "red")
+text(76, 0.4, "Umeå", col = "blue")
+@
 
 \end{frame}
 
@@ -725,45 +742,91 @@ ltx(fit, dr = dr)
 ##                          "prevMarried", "prevMarried") 
 adult <- age.window(skum20, c(20, 60))
 fit <- coxreg(Surv(enter, exit, event) ~ I(birthdate - 1880) + sex + civst + socBranch + region, 
-              data = adult)
+              hazards = FALSE, data = adult)
 dr <- drop1(fit, test = "Chisq")
 ltx(fit, dr = dr)
 @   
 
 \end{frame}
 
-\begin{frame}[fragile]{Median life at 40, Skellefteå}
-
-\includegraphics[height=8cm,width=10cm]{figure/socmen-1}
-
+\begin{frame}[fragile]{Adult survival}
+ 
+<<skummortadultsurv>>=
+fit <- coxph(Surv(enter, exit, event) ~ I(birthdate - 1880) + sex + civst + socBranch + strata(region), data = adult)
+plot(survfit(fit), mark.time = FALSE, xlim = c(20, 60), col = c("red", "blue"),
+     xlab = "Age", ylab = "Suviving fraction", ylim = c(0.8, 1), axes = FALSE)
+axis(1)
+axis(2, las = 1)
+box()
+abline(h = 0)
+abline(h = 0.85, lty = 2, col = "darkgreen")
+text(22, 0.90,  "Note scale!", , col = "darkred", srt = 90)
+text(35, 0.91, "Umeå", col = "blue")
+text(45, 0.95, "Skellefteå", col = "red")
+@   
 \end{frame}  
 
-\begin{frame}[fragile]{Median life at 40, Umeå}
+\begin{frame}[fragile]{Adult out-migration (21--60)}
+ \footnotesize
+<<skummigadult,results='asis'>>=
+##skum20$civst <- relevel(skum20$civst, ref = "married")
+##skum20$socBranch <- relevel(skum20$socBranch, ref = "farming")
+##levels(skum20$civst) <- c("married", "unmarried", "prevMarried", 
+##                          "prevMarried", "prevMarried") 
+#adult <- age.window(skum20, c(20, 60))
+fit <- phreg(Surv(enter - 20, exit - 20, sluttyp %in% 4:6) ~ I(birthdate - 1880) + sex + civst + socBranch + region, 
+       dist = "pch", cuts = c(5, 10, 15, 20, 25, 30, 35), data = adult)
+dr <- drop1(fit, test = "Chisq")
+ltx(fit, dr = dr)
+@   
 
-\includegraphics[height=8cm,width=10cm]{figure/socmenume-1}
+\end{frame}
 
-\end{frame}  
 
-\begin{frame}[fragile]{Relative risks in ages 40--59, Skellefteå}
+\begin{frame}[fragile]{Adult outmigration}
   
-\includegraphics[height=8cm]{figure/socpoinperiod-1}
-
+<<outmigplot>>=
+plot(fit, col = c("blue"), fn = "haz", axes = FALSE, xlab = "Age")
+axis(2, at = c(0, 0.01, 0.02, 0.03), las = 1)
+axis(1, at = c(0, 10, 20, 30, 40), labels = c(20, 30, 40, 50, 60))
+box()
+abline(h = 0)
+@   
 \end{frame}  
-\begin{frame}[fragile]{Relative risks in ages 40--59, Umeå}
+
+
+%% \begin{frame}[fragile]{Median life at 40, Skellefteå}
+
+%% \includegraphics[height=8cm,width=10cm]{figure/socmen-1}
+
+%% \end{frame}  
+
+%% \begin{frame}[fragile]{Median life at 40, Umeå}
+
+%% \includegraphics[height=8cm,width=10cm]{figure/socmenume-1}
+
+%% \end{frame}  
+
+%% \begin{frame}[fragile]{Relative risks in ages 40--59, Skellefteå}
   
-\includegraphics[height=8cm]{figure/socpoinperiodum-1}
+%% \includegraphics[height=8cm]{figure/socpoinperiod-1}
 
-\end{frame}  
-\begin{frame}[fragile]{Relative risks in ages 60--99, Skellefteå}
+%% \end{frame}  
+%% \begin{frame}[fragile]{Relative risks in ages 40--59, Umeå}
   
-\includegraphics[height=8cm]{figure/socpoinperiod100-1}
+%% \includegraphics[height=8cm]{figure/socpoinperiodum-1}
 
-\end{frame}  
-\begin{frame}[fragile]{Relative risks in ages 60--99, Umeå}
+%% \end{frame}  
+%% \begin{frame}[fragile]{Relative risks in ages 60--99, Skellefteå}
   
-\includegraphics[height=8cm]{figure/socpoinperiodum100-1}
+%% \includegraphics[height=8cm]{figure/socpoinperiod100-1}
 
-\end{frame}  
+%% \end{frame}  
+%% \begin{frame}[fragile]{Relative risks in ages 60--99, Umeå}
+  
+%% \includegraphics[height=8cm]{figure/socpoinperiodum100-1}
+
+%% \end{frame}  
 
 %' \begin{frame}[fragile]{Frailty}
 %' 
