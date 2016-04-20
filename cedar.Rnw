@@ -52,11 +52,11 @@ sk19 <- cal.window(obs[obs$region == "ske", ], c(1801, 1901))
 \item Skellefteå and Umeå 1901--1950.
   \begin{itemize}
   \item Description
-  \item Research
-      and influence of \emp{SES}.
+  \item A start of demographic research:
     \begin{enumerate}
     \item \emp{Fertility}
-    \item \emp{Adult mortality}
+    \item \emp{Mortality}
+    \item \emp{Migration}
      \end{enumerate}
     \end{itemize}
 \end{itemize}
@@ -72,11 +72,12 @@ sk19 <- cal.window(obs[obs$region == "ske", ], c(1801, 1901))
   \item \emp{PERSON} (static).
   \item \emp{NÄRVARO} (dynamic).
   \end{itemize}
-\item {\bf \emp{R}} package \emp{\tt skum} 
+\item {\bf \emp{R}} package \emp{\tt skum} (Version {\tt 0.1.2010} today)
   \begin{itemize}
-    \item PERSON: Two data frames:
+    \item PERSON: Three data frames:
       \begin{itemize}
         \item \emp{\tt persons}
+        \item \emp{\tt pers}
         \item \emp{\tt per}  
       \end{itemize}
     \item NÄRVARO:  Three data frames:
@@ -128,6 +129,27 @@ tail(observations, 5)
 @   
 
 \end{frame}  
+
+\begin{frame}[fragile]{{\sc Sluttyp}, 1901--1950}
+
+\begin{center}
+\begin{tabular}{rlr}
+\emp{Kod} & \emp{sluttyp} & \emp{Antal} \\ \hline
+0 & --- & 1152 \\
+1 & Nästa bok & 83\,967 \\
+2 &\emp{Död} & 42\,644 \\
+3 & Flyttning \emp{inom församling} & 75\,008 \\
+4 & Ut till \emp{annan församling} & 161\,672 \\
+5 & Ut till \emp{annat nordiskt land} & 316 \\
+6 & Ut till \emp{utanför norden} & 3481 \\
+7 & --- & 1 \\
+8 & --- & 104 \\
+9 & Ny rad på samma sida & 25\,732 \\
+99 & Ändrat \emp{civst} eller \emp{socst} & 247\,598
+\end{tabular}
+\end{center}
+
+\end{frame}
 
 \begin{frame}[fragile]{Who am I?}
   
@@ -392,21 +414,32 @@ text(1910, 5.2, "Farming", col = "blue")
 
 \end{frame}
 
-\begin{frame}[fragile]{Infant mortality by branch, Skellefteå 1801--1950}
+\begin{frame}[fragile]{Infant mortality, Skellefteå 1801--1950}
 
 <<imrbyb>>=
-source("R/infmort.R")
-oj.farm <- infmort(obs[obs$region == "ske" & obs$socBranch == "farming", ],
-                   1801:1950)
-oj.nofa <- infmort(obs[obs$region == "ske" & obs$socBranch != "farming", ],
-                   1801:1950)
-plot(names(oj.nofa), oj.nofa, type = "l", col = "red", ylim = c(0, 25),
-     axes = FALSE, xlab = "Year", ylab = "IMR (per cent)")
-axis(1, at = c(1801, 1851, 1901, 1950))
+#source("R/infmort.R")
+oj.farm <- ##infmort(obs[obs$region == "ske" & obs$socBranch == "farming", ],
+             ##      1801:1950)
+##    with(obs[obs$region == "ske" & obs$socBranch == "farming", ], 
+  ##       perstat(cbind(enter, exit, sluttyp == 2, birthdate), period = 1801:1951, 
+    ##             age = c(0, 1)))$intensity
+oj.nofa <- ##infmort(obs[obs$region == "ske" & obs$socBranch != "farming", ],
+             ##      1801:1950)
+    with(obs[obs$region == "ske", ], 
+         perstat(cbind(enter, exit, sluttyp == 2, birthdate), period = 1801:1951, 
+                 age = c(0, 1)))$intensity
+    
+plot(spline(1801:1950, 100 * oj.nofa), type = "l", col = "blue", ylim = c(0, 40),
+     xlab = "Year", ylab = "IMR (per cent)", axes = FALSE)
+att <- c(1809, 1834, 1868, 1893, 1950)
+axis(1, at = att) 
 axis(2, las = 1)
 box()
-lines(names(oj.farm), oj.farm, col = "blue")
+abline(v = att, lty = 3, col = "darkgreen")
+##lines(spline(1801:1950, 100 * oj.farm), col = "blue")
 abline(h = 0)
+##text(1825, 5, "Farming", col = "blue")
+##text(1890, 15, "Non-farming", col = "red")
 @ 
 \end{frame}
 
@@ -765,6 +798,38 @@ text(35, 0.91, "Umeå", col = "blue")
 text(45, 0.95, "Skellefteå", col = "red")
 @   
 \end{frame}  
+\begin{frame}[fragile]{Infant mortality}
+ \footnotesize
+<<skummortinfant,results='asis'>>=
+##skum20$civst <- relevel(skum20$civst, ref = "married")
+##skum20$socBranch <- relevel(skum20$socBranch, ref = "farming")
+##levels(skum20$civst) <- c("married", "unmarried", "prevMarried", 
+##                          "prevMarried", "prevMarried") 
+infant <- age.window(skum20, c(0, 1))
+fit <- coxreg(Surv(enter, exit, event) ~ I(birthdate - 1925) + sex + socBranch + region, 
+              hazards = FALSE, data = infant)
+dr <- drop1(fit, test = "Chisq")
+ltx(fit, dr = dr)
+@   
+
+\end{frame}
+
+\begin{frame}[fragile]{Infant survival}
+ 
+<<skummortinfantsurv>>=
+fit <- coxph(Surv(enter, exit, event) ~ I(birthdate - 1925) + sex + socBranch + strata(region), data = infant)
+plot(survfit(fit), mark.time = FALSE, xlim = c(0, 1), col = c("red", "blue"),
+     xlab = "Age (months)", ylab = "Suviving fraction", ylim = c(0.93, 1), axes = FALSE)
+axis(1, at = (0:12) / 12, labels = 0:12)
+axis(2, las = 1)
+box()
+##abline(h = 0)
+abline(h = 0.85, lty = 2, col = "darkgreen")
+text(22, 0.90,  "Note scale!", , col = "darkred", srt = 90)
+text(0.4, 0.95, "Umeå", col = "blue")
+text(0.75, 0.96, "Skellefteå", col = "red")
+@   
+\end{frame}  
 
 \begin{frame}[fragile]{Adult out-migration (21--60)}
  \footnotesize
@@ -777,7 +842,8 @@ text(45, 0.95, "Skellefteå", col = "red")
 fit <- phreg(Surv(enter - 20, exit - 20, sluttyp %in% 4:6) ~ I(birthdate - 1880) + sex + civst + socBranch + region, 
        dist = "pch", cuts = c(5, 10, 15, 20, 25, 30, 35), data = adult)
 dr <- drop1(fit, test = "Chisq")
-ltx(fit, dr = dr)
+source("plat.R")
+plat(fit, dr = dr)
 @   
 
 \end{frame}
@@ -865,7 +931,20 @@ abline(h = 0)
 
 \begin{frame}[fragile]{Conclusion}
 
-We have shown
+\begin{itemize}
+\item Need to 
+\begin{itemize}
+\item find some \emp{standard} for \emp{data management}, and
+\item create a \emp{generic {\bf R} package}, without data.
+\end{itemize}
+\item Some unexpected findings, but they may be
+\begin{itemize}
+\item \emp{artefacts} of too crude models, or
+\item examples of \emp{Simpson's paradox}.
+\end{itemize}
+\item Research topics?
+\end{itemize}
+
 \end{frame}
 
 \end{document}
